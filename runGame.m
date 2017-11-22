@@ -3,19 +3,19 @@
 % 0 rows in alivePlayers denote dead players.
 function payouts=runGame(strategies)
     numPlayers = size(strategies, 1);
-    maxNumRounds = size(strategies, 2);
+    maxNumRounds = numPlayers;
     payouts = zeros(numPlayers, 1);
     alivePlayers = 1:numPlayers;
     
     for i=1:maxNumRounds
         % Find lowest bidders
-        currentStrategies = strategies(:, i);
+        %currentStrategies = strategies{i};
         minVal = inf;
         minIndices = [];
         for j=1:length(alivePlayers)
             currentPlayer = alivePlayers(j);
             if (currentPlayer ~= 0)
-                currentVal = currentStrategies(currentPlayer);
+                currentVal = strategies{j}.nextBid();
                 if (currentVal < minVal)
                     minVal = currentVal;
                     minIndices = currentPlayer;
