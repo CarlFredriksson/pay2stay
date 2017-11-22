@@ -9,7 +9,6 @@ function payouts=runGame(strategies)
     
     for i=1:maxNumRounds
         % Find lowest bidders
-        %currentStrategies = strategies{i};
         minVal = inf;
         minIndices = [];
         for j=1:length(alivePlayers)
