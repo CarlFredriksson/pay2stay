@@ -1,7 +1,12 @@
 classdef Strategy < handle
     
+    properties
+        id
+    end
+    
     methods
-        function obj = Strategy()
+        function obj = Strategy(id)
+            obj.id = id;
         end
 
         function bid=nextBid(obj)
