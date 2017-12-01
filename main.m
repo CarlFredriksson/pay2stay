@@ -26,6 +26,7 @@ game = @(strategies) [0, 1, 2, 3, 4]; % placeholder fcn
 movie(:, :, 1) = grid;
 
 for generation = 1:N_GENERATION
+    fprintf('Running: %f%%\n', generation/N_GENERATION * 100);
     for j=1:WIDTH
         for i=1:HEIGHT
             cs = grid(i,j);
