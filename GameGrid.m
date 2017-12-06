@@ -16,7 +16,11 @@ classdef GameGrid < handle
         width = 20
         height = 20
         nRounds = 3
-        mutationRate = 0.002
+        randomMutationRate = 0.01
+        creepMutationRate = 0.02
+        creepMutationLength = 0.1
+        payoffType = "linear"
+        eliminationType = "full"
         strategyGrid
         fitness
         movie
@@ -26,6 +30,7 @@ classdef GameGrid < handle
         function obj = GameGrid(nCoins)
             % Constructor
             obj.nCoins = nCoins;
+            obj.initMovie();
         end
         
         function populateRandomly(obj)
@@ -34,13 +39,24 @@ classdef GameGrid < handle
             obj.strategyGrid = bsxfun(@rdivide, obj.strategyGrid, sum(obj.strategyGrid,3)); % Normalize propabilties
         end
         
-        function run(obj, runNGenerations)
+        function initMovie(obj)
+            obj.movie = zeros(obj.height, obj.width, 3, 1);
+        end
+        
+        function run(obj, runNGenerations, shouldMutate)
             % Run the evolutionary grid
-            obj.movie = zeros(obj.height, obj.width, 3, runNGenerations+1);
             
-            for generation=1:runNGenerations
-               fprintf('Running: %f%%\n', generation/runNGenerations * 100);
-               obj.movie(:,:,:,generation) = obj.strategyToColor();
+            %If initial generation record it
+            startGeneration = size(obj.movie,4);
+            if startGeneration == 1
+                obj.movie(:,:,:,1) =  obj.strategyToColor();
+            end
+            
+            % Allocate more space for movie
+            obj.movie(:,:,:,end+1:end+runNGenerations) = zeros(obj.height, obj.width, 3, runNGenerations);
+            
+            for generation = 1:runNGenerations
+               fprintf('Running: %.1f%%\n', generation/runNGenerations * 100);
                obj.fitness = zeros(obj.height, obj.width);
                
                % Play all rounds in this generation
@@ -64,19 +80,29 @@ classdef GameGrid < handle
                end
                
                % Mutation
-               for j=1:obj.width
-                   for i=1:obj.height
-                       for k=1:obj.nCoins
-                           if rand < obj.mutationRate
-                               obj.strategyGrid(i,j,k) = rand;
-                               obj.strategyGrid(i,j,:) = obj.strategyGrid(i,j,:)./sum(obj.strategyGrid(i,j,:));
+               if shouldMutate
+                   for j=1:obj.width
+                       for i=1:obj.height
+                           for k=1:obj.nCoins
+                               % Random mutation
+                               if rand < obj.randomMutationRate
+                                   obj.strategyGrid(i,j,k) = rand;
+                                   obj.strategyGrid(i,j,:) = obj.strategyGrid(i,j,:)./sum(obj.strategyGrid(i,j,:));
+                               end
+                               % Creep Mutation
+                               if rand < obj.creepMutationRate
+                                   obj.strategyGrid(i,j,k) = obj.strategyGrid(i,j,k) * (rand*2-1)*obj.creepMutationLength;
+                                   obj.strategyGrid(i,j,k) = min(1,max(0,obj.strategyGrid(i,j,k)));
+                                   obj.strategyGrid(i,j,:) = obj.strategyGrid(i,j,:)./sum(obj.strategyGrid(i,j,:));
+                               end
                            end
                        end
                    end
                end
-               
+               % Record movie
+               obj.movie(:,:,:,startGeneration+generation) = obj.strategyToColor();
             end
-            obj.movie(:,:,:,end) =  obj.strategyToColor();
+            
         end
         
         function playRound(obj,ci,cj)
@@ -96,7 +122,7 @@ classdef GameGrid < handle
         end
         
         function playMatch(obj, pos1, pos2, pos3)
-            % Play one match and calculate scores (The payoff is defined here)
+            % Play one match and calculate scores (The payoff is alos defined here)
             % Store the score in the fitness matrix
             isAlive = [1, 1, 1];
             score = [0, 0, 0];
@@ -123,9 +149,26 @@ classdef GameGrid < handle
             obj.fitness(pos3(1), pos3(2)) = obj.fitness(pos3(1), pos3(2)) + score(3);
         end
         
+        function storePayoff(obj, pos1, pos2, pos3, outcome)
+            % NOT IMPLEMENTED YET
+            % Compute and acummulate payoff in the fitness matrix
+            if obj.payoffType == "simple"
+                payoff = sum(outcome(2,:));
+            elseif obj.payoffType == "linear"
+                payoff = sum(outcome);
+            elseif obj.payoffType == "non-linear"
+                outcome(2,:) = 2*outcome(2,:);
+                payoff = sum(outcome);
+            end
+            
+            obj.fitness(pos1(1), pos1(2)) = obj.fitness(pos1(1), pos1(2)) + payoff(1);
+            obj.fitness(pos2(1), pos2(2)) = obj.fitness(pos2(1), pos2(2)) + payoff(2);
+            obj.fitness(pos3(1), pos3(2)) = obj.fitness(pos3(1), pos3(2)) + payoff(3);
+        end
+        
         function bet = drawBet(~, strategy)
             % Randomly select a bet based on the mixed strategy
-            cdf = cumsum(strategy); % TODO run only once
+            cdf = cumsum(strategy);
             r = rand;
             cdf(cdf<r) = 2;
             [~, bet] = min(cdf);
@@ -144,11 +187,11 @@ classdef GameGrid < handle
         function cg = strategyToColor(obj)
             % Map all colors to strategies
             cg = zeros(obj.height, obj.width, 3);
-            split1 = floor(obj.nCoins/3);
-            split2 = floor(obj.nCoins*2/3);
+            split1 = ceil(size(obj.strategyGrid,3)/3);
+            split2 = ceil(size(obj.strategyGrid,3)*2/3);
             cg(:,:,1) = sum(obj.strategyGrid(:,:,1:split1),3);
-            cg(:,:,2) = sum(obj.strategyGrid(:,:,split1:split2),3);
-            cg(:,:,3) = sum(obj.strategyGrid(:,:,split2:end),3);
+            cg(:,:,2) = sum(obj.strategyGrid(:,:,split1+1:split2),3);
+            cg(:,:,3) = sum(obj.strategyGrid(:,:,split2+1:end),3);
         end
     end
 end
