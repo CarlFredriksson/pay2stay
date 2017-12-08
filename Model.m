@@ -5,9 +5,14 @@
 
 classdef Model
    properties
-      payoff = 0
-      elimination = 0
-      running = 0
+       
+      % The actual class doing the simulation
+      gameGrid = GameGrid(9);
+       
+      payoff = 0;
+      elimination = 0;
+      coins = 0;
+      running = 0;
       
       % TODO: Let class by Johan be member of this Model
       % Implement setPayoff, setElimination, getGrid and evolve
@@ -18,14 +23,22 @@ classdef Model
        
        % Takes string indicating payoff function
        function out = setPayoff(obj, str)
-           payoff = str;
+           obj.payoff = str;
            obj.reset(); % Make sure to reset model after changing payoff
+           obj.gameGrid.setPayoff(obj.payoff);
        end
        
        % Takes string indicating elimination rule
        function out = setElimination(obj, str)
-           elimination = str;
+           obj.elimination = str;
            obj.reset(); % Make sure to reset model after changing elimination
+           obj.gameGrid.setElimination(obj.elimination);
+       end
+       
+       function out = setCoins(obj, val)
+           obj.coins = val;
+           obj.reset();
+           obj.gameGrid.setCoins(obj.coins);
        end
        
        % Iterates the evolution in one step
