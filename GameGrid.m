@@ -54,7 +54,7 @@ classdef GameGrid < handle
         end
         
         % Init function
-        function out = init(obj)
+        function init(obj)
             obj.populateRandomly();
             obj.startGeneration = size(obj.movie,4);
             if obj.startGeneration == 1
@@ -65,7 +65,7 @@ classdef GameGrid < handle
             obj.movie(:,:,:,end+1:end+obj.nGenerations) = zeros(obj.height, obj.width, 3, obj.nGenerations)
         end
         
-        function out = step(obj, generation)
+        function step(obj, generation)
             obj.fitness = zeros(obj.height, obj.width);
             
             % Play all rounds in this generation
@@ -138,7 +138,7 @@ classdef GameGrid < handle
             bet3 = obj.drawBet(obj.strategyGrid(pos3(1), pos3(2), :));
             bets = [bet1, bet2, bet3];
             
-            idx = ( find(bets == min(bets)) );
+            [~, idx] = min(bets);
             isAlive(idx) = 0;
             score = score + isAlive;
             

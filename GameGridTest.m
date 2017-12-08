@@ -3,8 +3,15 @@ g=GameGrid();
 g.setCoins(10);
 g.populateRandomly();
 g.setMutate(true);
-g.setGenerations(100);
-g.run();
+g.setGenerations(3);
+
+N_ITERS = 4;
+tic;
+for i=1:N_ITERS
+    g.run();
+end
+runningTime = toc;
+fprintf('Avg running time: %f\n', runningTime/N_ITERS);
 
 %%
 implay(g.movie,10)
