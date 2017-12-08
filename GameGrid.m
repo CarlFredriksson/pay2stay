@@ -245,6 +245,7 @@ classdef GameGrid < handle
         function reset(obj)
             obj.initMovie();
             obj.init();
+            obj.populateRandomly();
         end
         
     end

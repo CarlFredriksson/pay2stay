@@ -1,11 +1,9 @@
 clear all; clc;
-g=GameGrid(10);
+g=GameGrid();
+g.setCoins(10);
 g.populateRandomly();
 g.setMutate(true);
 g.setGenerations(100);
-g.run();
-g.setMutate(false);
-g.setGenerations(200);
 g.run();
 
 %%
