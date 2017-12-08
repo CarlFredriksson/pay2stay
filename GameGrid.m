@@ -203,17 +203,17 @@ classdef GameGrid < handle
         
         % Payoff setter
         function out = setPayoff(obj, str)
-            payoffType = lower(str);
+            obj.payoffType = lower(str);
         end
         
         % Elimination rule setter
         function out = setElimination(obj, str)
-            eliminationType = lower(str);
+            obj.eliminationType = lower(str);
         end
         
         % Coins setter
         function out = setCoins(obj, val)
-            nCoins = max(1, val); % Only allow natural numbers wout zero
+            obj.nCoins = max(1, val); % Only allow natural numbers wout zero
         end
     end
 end
