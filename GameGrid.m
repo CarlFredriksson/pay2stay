@@ -12,19 +12,21 @@ classdef GameGrid < handle
     
     
     properties
-        nCoins
-        width = 20
-        height = 20
-        nRounds = 3
-        randomMutationRate = 0.01
-        creepMutationRate = 0.02
-        creepMutationLength = 0.1
-        payoffType = 'linear'
-        eliminationType = 'full'
-        strategyGrid
-        fitness
-        startGeneration
-        movie
+        nCoins;
+        width = 20;
+        height = 20;
+        nRounds = 3;
+        randomMutationRate = 0.01;
+        creepMutationRate = 0.02;
+        creepMutationLength = 0.1;
+        shouldMutate = false;
+        payoffType = 'linear';
+        eliminationType = 'full';
+        strategyGrid;
+        fitness;
+        startGeneration;
+        nGenerations = 10;
+        movie;
     end
     
     methods
@@ -44,28 +46,27 @@ classdef GameGrid < handle
             obj.movie = zeros(obj.height, obj.width, 3, 1);
         end
         
-        function run(obj, runNGenerations, shouldMutate)     
-            obj.init(runNGenerations);
-            for generation = 1:runNGenerations
-                fprintf('Running: %.1f%%\n', generation/runNGenerations * 100);
-                obj.step(generation, shouldMutate);
+        function run(obj)     
+            obj.init();
+            for generation = 1:obj.nGenerations
+                fprintf('Running: %.1f%%\n', generation/obj.nGenerations * 100);
+                obj.step(generation);
             end
         end
         
-        function out = init(obj, runNGenerations)
-            % Run the evolutionary grid
-            
-            %If initial generation record it
+        % Init function
+        function out = init(obj)
+            obj.populateRandomly();
             obj.startGeneration = size(obj.movie,4);
             if obj.startGeneration == 1
                 obj.movie(:,:,:,1) =  obj.strategyToColor();
             end
             
             % Allocate more space for movie
-            obj.movie(:,:,:,end+1:end+runNGenerations) = zeros(obj.height, obj.width, 3, runNGenerations)
+            obj.movie(:,:,:,end+1:end+obj.nGenerations) = zeros(obj.height, obj.width, 3, obj.nGenerations)
         end
         
-        function out = step(obj, generation, shouldMutate)
+        function out = step(obj, generation)
             obj.fitness = zeros(obj.height, obj.width);
             
             % Play all rounds in this generation
@@ -89,7 +90,7 @@ classdef GameGrid < handle
             end
             
             % Mutation
-            if shouldMutate
+            if obj.shouldMutate
                 for j=1:obj.width
                     for i=1:obj.height
                         for k=1:obj.nCoins
@@ -201,19 +202,50 @@ classdef GameGrid < handle
             cg(:,:,3) = sum(obj.strategyGrid(:,:,split2+1:end),3);
         end
         
+        %***************************%
+        %***************************%
+        %*** Methods used by GUI ***%
+        %***************************%
+        %***************************%
         % Payoff setter
-        function out = setPayoff(obj, str)
+        function setPayoff(obj, str)
             obj.payoffType = lower(str);
         end
         
         % Elimination rule setter
-        function out = setElimination(obj, str)
+        function setElimination(obj, str)
             obj.eliminationType = lower(str);
         end
         
         % Coins setter
-        function out = setCoins(obj, val)
+        function setCoins(obj, val)
             obj.nCoins = max(1, val); % Only allow natural numbers wout zero
         end
+        
+        % Mutate sette
+        function setMutate(obj, bool)
+            obj.shouldMutate = bool;
+        end
+        
+        % Set generations
+        function setGenerations(obj, val)
+            obj.nGenerations = val;
+        end
+        
+        % Get generations
+        function val = getGenerations(obj)
+            val = obj.nGenerations;
+        end
+        
+        % Movie getter
+        function out = getFrame(obj, frame)
+            out = obj.movie(:, :, :, frame); 
+        end
+        
+        function reset(obj)
+            obj.initMovie();
+            obj.init();
+        end
+        
     end
 end

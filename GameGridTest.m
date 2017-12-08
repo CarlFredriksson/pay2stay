@@ -1,8 +1,12 @@
 clear all; clc;
 g=GameGrid(10);
 g.populateRandomly();
-g.run(100,true)
-g.run(200,false)
+g.setMutate(true);
+g.setGenerations(100);
+g.run();
+g.setMutate(false);
+g.setGenerations(200);
+g.run();
 
 %%
 implay(g.movie,10)
