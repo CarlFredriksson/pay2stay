@@ -12,7 +12,7 @@ implay(g.movie,10)
 %%
 clc;clf
 strategies = reshape(g.strategyGrid,[],g.nCoins+1);
-
+ 
 subplot(1,2,1)
 plot(0:g.nCoins,strategies,'*')
 axis([-0.5, g.nCoins+0.5, -inf, inf])

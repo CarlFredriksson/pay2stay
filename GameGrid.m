@@ -30,9 +30,8 @@ classdef GameGrid < handle
     end
     
     methods
-        function obj = GameGrid(nCoins)
+        function obj = GameGrid()
             % Constructor
-            obj.nCoins = nCoins;
             obj.initMovie();
         end
         
@@ -220,6 +219,7 @@ classdef GameGrid < handle
         % Coins setter
         function setCoins(obj, val)
             obj.nCoins = max(1, val); % Only allow natural numbers wout zero
+            obj.populateRandomly();
         end
         
         % Mutate sette
