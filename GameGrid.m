@@ -55,14 +55,14 @@ classdef GameGrid < handle
         
         % Init function
         function init(obj)
-            obj.populateRandomly();
+            %obj.populateRandomly();
             obj.startGeneration = size(obj.movie,4);
             if obj.startGeneration == 1
                 obj.movie(:,:,:,1) =  obj.strategyToColor();
             end
             
             % Allocate more space for movie
-            obj.movie(:,:,:,end+1:end+obj.nGenerations) = zeros(obj.height, obj.width, 3, obj.nGenerations)
+            obj.movie(:,:,:,end+1:end+obj.nGenerations) = zeros(obj.height, obj.width, 3, obj.nGenerations);
         end
         
         function step(obj, generation)
@@ -129,43 +129,55 @@ classdef GameGrid < handle
         end
         
         function playMatch(obj, pos1, pos2, pos3)
-            % Play one match and calculate scores (The payoff is alos defined here)
+            % Play one match and calculate scores
             % Store the score in the fitness matrix
             isAlive = [1, 1, 1];
-            score = [0, 0, 0];
+            %score = [0, 0, 0];
             bet1 = obj.drawBet(obj.strategyGrid(pos1(1), pos1(2), :));
             bet2 = obj.drawBet(obj.strategyGrid(pos2(1), pos2(2), :));
             bet3 = obj.drawBet(obj.strategyGrid(pos3(1), pos3(2), :));
             bets = [bet1, bet2, bet3];
             
-            [~, idx] = min(bets);
-            isAlive(idx) = 0;
-            score = score + isAlive;
-            
-            if sum(isAlive) == 2
+            outcome = ones(2,3);
+            if strcmp(obj.eliminationType, 'full')
+                isAlive(bets==min(bets)) = 0;
+                outcome(1,:) = isAlive;
+                
+                if sum(isAlive) == 2
+                    bets = obj.nCoins-bets;
+                    bets(isAlive==0) = inf;
+                    isAlive(bets==min(bets)) = 0;
+                    outcome(2,:) = isAlive;
+                end
+            elseif strcmp(obj.eliminationType, 'random')
+                minBets = find(bets==min(bets));
+                isAlive( minBets( randi( length( minBets ) ) ) ) = 0;
+                outcome(1,:) = isAlive;
+                
                 bets = obj.nCoins-bets;
                 bets(isAlive==0) = inf;
-                idx = ( find(bets == min(bets)) );
-                isAlive(idx) = 0;
-                score = score + isAlive;
+                minBets = find(bets==min(bets));
+                isAlive( minBets( randi( length( minBets ) ) ) ) = 0;
+                outcome(2,:) = isAlive;
+            else 
+                disp('Incorrect elimination type');
             end
-            
-            %Store score in fitness matrix
-            obj.fitness(pos1(1), pos1(2)) = obj.fitness(pos1(1), pos1(2)) + score(1);
-            obj.fitness(pos2(1), pos2(2)) = obj.fitness(pos2(1), pos2(2)) + score(2);
-            obj.fitness(pos3(1), pos3(2)) = obj.fitness(pos3(1), pos3(2)) + score(3);
+            obj.storePayoff(pos1, pos2, pos3, outcome)
+           
         end
         
         function storePayoff(obj, pos1, pos2, pos3, outcome)
-            % NOT IMPLEMENTED YET
             % Compute and acummulate payoff in the fitness matrix
-            if obj.payoffType == 'simple'
-                payoff = sum(outcome(2,:));
-            elseif obj.payoffType == 'linear'
+            if strcmp(obj.payoffType, 'simple')
+                payoff = outcome(2,:);
+            elseif strcmp(obj.payoffType, 'linear')
                 payoff = sum(outcome);
-            elseif obj.payoffType == 'non-linear'
-                outcome(2,:) = 2*outcome(2,:);
+            elseif strcmp(obj.payoffType, 'non-linear')
+                outcome = 4*outcome;
+                outcome(2,:) = 8*outcome(2,:);
                 payoff = sum(outcome);
+            else
+                disp('inccorect payoff type')
             end
             
             obj.fitness(pos1(1), pos1(2)) = obj.fitness(pos1(1), pos1(2)) + payoff(1);
