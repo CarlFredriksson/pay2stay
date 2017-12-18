@@ -55,7 +55,7 @@ classdef GameGrid < handle
         
         % Init function
         function init(obj)
-            %obj.populateRandomly();
+            obj.populateRandomly();
             obj.startGeneration = size(obj.movie,4);
             if obj.startGeneration == 1
                 obj.movie(:,:,:,1) =  obj.strategyToColor();
