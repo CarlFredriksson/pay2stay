@@ -125,6 +125,8 @@ classdef GameGrid < handle
                 obj.playMatch(cp, ep, sp);
                 obj.playMatch(cp, sp, wp);
                 obj.playMatch(cp, wp, np);
+                obj.playMatch(cp, np, sp);
+                obj.playMatch(cp, ep, wp);
             end
         end
         
@@ -169,7 +171,11 @@ classdef GameGrid < handle
         function storePayoff(obj, pos1, pos2, pos3, outcome)
             % Compute and acummulate payoff in the fitness matrix
             if strcmp(obj.payoffType, 'simple')
-                payoff = outcome(2,:);
+                if sum(outcome(1,:)) == 1
+                    payoff = outcome(1,:);
+                else
+                    payoff = outcome(2,:);
+                end
             elseif strcmp(obj.payoffType, 'linear')
                 payoff = sum(outcome);
             elseif strcmp(obj.payoffType, 'non-linear')
@@ -234,7 +240,7 @@ classdef GameGrid < handle
             obj.populateRandomly();
         end
         
-        % Mutate sette
+        % Mutate setter
         function setMutate(obj, bool)
             obj.shouldMutate = bool;
         end

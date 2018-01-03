@@ -1,17 +1,17 @@
 clear all; clc;
-g=GameGrid();
-g.setCoins(10);
+g=GameGrid2();
+g.nCoins = 10;
+g.payoffType = 'simple';
+g.eliminationType = 'full';
 g.populateRandomly();
-g.setMutate(true);
-g.setGenerations(3);
+%g.populateCustom([0.5 0.3 0.2 0 0 0 0 0 0 0 0])
+%g.populateUniformly()
+g.shouldMutate = true;
+g.run(100);
+g.shouldMutate = false;
+g.run(100);
 
-N_ITERS = 1;
-tic;
-for i=1:N_ITERS
-    g.run();
-end
-runningTime = toc;
-fprintf('Avg running time: %f\n', runningTime/N_ITERS);
+
 
 %%
 implay(g.movie,10)
@@ -36,29 +36,4 @@ xlabel('Coins')
 ylabel('Probability')
 title('Mean strategy')
 
-%% Create gif
-clear all; clc;
-g=GameGrid();
-g.setCoins(10);
-g.payoffType = 'non-linear';
-g.eliminationType = 'random';
-g.populateRandomly();
 
-g.setMutate(true);
-g.setGenerations(100);
-g.run();
-
-g.setMutate(false);
-g.setGenerations(100);
-g.run();
-
-%%
-filename = 'movie.gif';
-for i = [1:75 100:125]
-    [A,map] = rgb2ind(imresize(g.movie(:,:,:,i),40,'nearest'),256);
-    if i == 1
-        imwrite(A,map,filename,'gif','LoopCount',Inf,'DelayTime',0.05);
-    else
-        imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',0.05);
-    end
-end
